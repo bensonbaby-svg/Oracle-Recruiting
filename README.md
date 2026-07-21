@@ -30,6 +30,23 @@ Run the test suite (stdlib only, no dependencies):
 python3 -m unittest discover -s tests -v
 ```
 
+## Run the MCP server (for registering as a Tool in Oracle AI Agent Studio)
+
+Oracle AI Agent Studio can register a "Tool" backed by an MCP server. This
+repo includes one, exposing the validation and notification logic:
+
+```
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python3 mcp_server/server.py
+# serves streamable-HTTP MCP at http://<host>:8000/mcp
+```
+
+This has been tested end-to-end over the real MCP protocol (initialize,
+tools/list, tools/call). See `docs/oracle_agent_studio_setup.md` section 2a
+for exact steps to register it in Studio's "New Tool" screen (Tool Type:
+MCP), and the full checklist for everything else needed to go live.
+
 ## Layout
 
 | Path | Purpose |
@@ -38,11 +55,12 @@ python3 -m unittest discover -s tests -v
 | `src/validator.py` | Loads the HCM extract and applies the rule catalog |
 | `src/email_notifier.py` | Groups exceptions by data owner and renders/sends the notification email |
 | `main.py` | Orchestrates retrieve -> validate -> notify, the same flow the real agent runs |
+| `mcp_server/server.py` | MCP server exposing `validate_against_adp_spec`, `send_notification_email`, and a demo `get_hcm_extract` as MCP tools |
 | `data/sample_hcm_extract_canada.csv` | Mock Oracle HCM Canada extract with injected errors |
 | `tests/test_validator.py` | Rule-by-rule and end-to-end regression tests |
 | `docs/architecture.md` | Target Oracle AI Agent Studio architecture and how this wireframe maps to it |
 | `docs/adp_validation_rules_canada.md` | The rule catalog spelled out, with what Fortive needs to supply to replace placeholders |
-| `docs/oracle_agent_studio_setup.md` | Agent instructions, tool/function definitions, and knowledge sources to configure in the real Oracle AI Agent Studio |
+| `docs/oracle_agent_studio_setup.md` | Agent instructions, tool registration steps (including MCP), and the complete checklist to bring the POC to life |
 
 ## Important caveat
 

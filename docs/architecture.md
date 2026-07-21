@@ -12,9 +12,9 @@ Staging area (OCI Object Storage bucket or Oracle Integration Cloud (OIC) instan
       | 2. Agent trigger: scheduled job or OIC integration event
       v
 Oracle AI Agent Studio Agent  ("HCM-ADP-CA-Validator")
-  - Tool: get_hcm_extract        -> reads staged extract
-  - Tool: validate_against_spec  -> runs ADP Canada rule catalog, returns exceptions
-  - Tool: send_notification      -> emails HR/data owner digest
+  - Tool (Business Object): get_hcm_extract       -> reads Oracle HCM directly
+  - Tool (MCP):             validate_against_spec -> runs ADP Canada rule catalog, returns exceptions
+  - Tool (Email):           send_notification      -> emails HR/data owner digest
   - Knowledge: ADP Celergo Canada interface control document (ICD),
                Fortive pay group / earnings code reference
       |
@@ -37,10 +37,10 @@ enough for a human to fix the source data before the real interface runs.
 
 | Wireframe (this repo)              | Real Oracle AI Agent Studio component |
 |-------------------------------------|----------------------------------------|
-| `data/sample_hcm_extract_canada.csv` | Oracle HCM Extract / OTBI report output, staged to OIC or Object Storage |
-| `src/rules.py` rule catalog          | Agent Knowledge (ADP Celergo Canada ICD) + a callable Tool/Function that encodes the same checks |
-| `src/validator.py`                   | The `validate_against_spec` Tool exposed to the agent (REST-backed function, Fusion custom function, or OIC integration) |
-| `src/email_notifier.py`              | The `send_notification` Tool — OIC "send email" action, or Fusion BI Publisher email delivery, invoked by the agent |
+| `data/sample_hcm_extract_canada.csv` | Oracle HCM Canada payroll data, read live via a **Business Object** tool (no staging needed for the demo data path) |
+| `src/rules.py` rule catalog          | Agent Knowledge (ADP Celergo Canada ICD) + the `validate_against_adp_spec` MCP tool, which runs the same checks |
+| `src/validator.py` + `mcp_server/server.py` | The `validate_against_adp_spec` **MCP** tool — a working MCP server in this repo, registered in Studio's Tools tab via Tool Type "MCP" |
+| `src/email_notifier.py`              | The `send_notification_email` **Email** tool (native Fusion tool type) — no custom hosting needed |
 | `main.py` orchestration              | The Agent's instructions/workflow: "retrieve extract -> validate -> if exceptions, notify" |
 | `tests/test_validator.py`            | Regression pack to re-run whenever the ADP spec or pay group config changes |
 
