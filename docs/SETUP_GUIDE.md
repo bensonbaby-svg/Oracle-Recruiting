@@ -234,5 +234,6 @@ from step 8 → select tools → test).
 | `.venv\Scripts\Activate.ps1 cannot be loaded` | Run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` first, or use `activate.bat` in cmd.exe instead of PowerShell. |
 | Prompt doesn't show `(.venv)` | The virtual environment isn't activated — re-run the `activate` command from step 3 (you don't need to recreate it with `python -m venv .venv` again). |
 | `pip install` fails with permission errors | You likely forgot to activate the virtual environment first — re-check for `(.venv)` in your prompt. |
+| `ModuleNotFoundError: No module named 'mcp'` when running the server | The virtual environment isn't active in this terminal, so `python3` is using your system Python instead of `.venv`. Run the `activate` command for your shell (step 3) until your prompt shows `(.venv)`, then re-run `python3 mcp_server/server.py`. If it still fails, run `which python3` — it should point inside `.venv/Scripts/` (Windows) or `.venv/bin/` (macOS/Linux); if it doesn't, activation isn't taking effect. |
 | Port 8000 already in use | Run `python3 mcp_server/server.py --port 8001` instead, and adjust the tunnel/curl commands to match. |
 | `cloudflared` not found after install | Open a new terminal window so your PATH refreshes. |
