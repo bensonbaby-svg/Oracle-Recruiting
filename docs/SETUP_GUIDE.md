@@ -98,6 +98,16 @@ python -m venv .venv
 .venv\Scripts\activate.bat
 ```
 
+**Windows (Git Bash / MINGW64):** the venv module still creates a
+Windows-style `Scripts/` folder here, not `bin/` — use:
+```bash
+python3 -m venv .venv
+source .venv/Scripts/activate
+```
+If you see `bash: .venv/bin/activate: No such file or directory`, that
+means you tried the macOS/Linux path (`bin/`) instead of `Scripts/` — this
+is the fix.
+
 **How to know it worked:** your terminal prompt should now show `(.venv)`
 at the start of the line, e.g. `(.venv) you@machine Oracle-Recruiting %`.
 Every command below assumes it's still showing `(.venv)` — if you close
