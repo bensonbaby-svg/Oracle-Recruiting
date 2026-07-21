@@ -108,7 +108,9 @@ def get_hcm_extract(extract_date: str | None = None) -> list[dict]:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--stdio", action="store_true", help="Run over stdio instead of streamable-http")
-    parser.add_argument("--port", type=int, default=8000)
+    # PaaS hosts (Render, Railway, Fly.io, etc.) assign the listen port via the
+    # PORT env var; --port still wins if explicitly passed for local runs.
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", 8000)))
     args = parser.parse_args()
 
     if args.stdio:
