@@ -12,40 +12,21 @@ tools/rules/instructions straight to Oracle AI Agent Studio once you have
 tenant access. See `docs/oracle_agent_studio_setup.md` for exactly what to
 paste in and what's still needed to go live.
 
-## Run it
+## Setup and running it
 
+**Full step-by-step instructions (no Python experience assumed, safe to
+hand to a colleague) are in `docs/SETUP_GUIDE.md`.** It covers installing
+Python/git, creating the virtual environment, installing dependencies,
+running the tests and demo, running the MCP server, and exposing it
+publicly so Oracle AI Agent Studio can call it.
+
+Quick reference if you already have Python 3.9+ set up:
 ```
-python3 main.py
+python3 main.py                              # run the detect-and-flag demo
+python3 -m unittest discover -s tests -v      # run the test suite
+python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+python3 mcp_server/server.py                  # run the MCP server (see docs/SETUP_GUIDE.md to expose it)
 ```
-
-This validates `data/sample_hcm_extract_canada.csv` (17 mock Canada
-employees, most with a deliberately injected error) against the ADP Canada
-rule catalog, prints the exception list, and writes one HTML email digest
-per HR/data owner to `output/` (dry-run — no real email is sent unless
-`SMTP_HOST` is set, see `src/email_notifier.py`).
-
-Run the test suite (stdlib only, no dependencies):
-
-```
-python3 -m unittest discover -s tests -v
-```
-
-## Run the MCP server (for registering as a Tool in Oracle AI Agent Studio)
-
-Oracle AI Agent Studio can register a "Tool" backed by an MCP server. This
-repo includes one, exposing the validation and notification logic:
-
-```
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python3 mcp_server/server.py
-# serves streamable-HTTP MCP at http://<host>:8000/mcp
-```
-
-This has been tested end-to-end over the real MCP protocol (initialize,
-tools/list, tools/call). See `docs/oracle_agent_studio_setup.md` section 2a
-for exact steps to register it in Studio's "New Tool" screen (Tool Type:
-MCP), and the full checklist for everything else needed to go live.
 
 ## Layout
 
@@ -58,6 +39,7 @@ MCP), and the full checklist for everything else needed to go live.
 | `mcp_server/server.py` | MCP server exposing `validate_against_adp_spec`, `send_notification_email`, and a demo `get_hcm_extract` as MCP tools |
 | `data/sample_hcm_extract_canada.csv` | Mock Oracle HCM Canada extract with injected errors |
 | `tests/test_validator.py` | Rule-by-rule and end-to-end regression tests |
+| `docs/SETUP_GUIDE.md` | Full step-by-step: install Python/git, set up the virtual environment, run everything, expose the MCP server publicly |
 | `docs/architecture.md` | Target Oracle AI Agent Studio architecture and how this wireframe maps to it |
 | `docs/adp_validation_rules_canada.md` | The rule catalog spelled out, with what Fortive needs to supply to replace placeholders |
 | `docs/oracle_agent_studio_setup.md` | Agent instructions, tool registration steps (including MCP), and the complete checklist to bring the POC to life |
