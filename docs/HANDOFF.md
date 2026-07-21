@@ -55,8 +55,8 @@ AI Agent Studio that:
   protocol (`initialize`, `tools/list`, `tools/call` all tested
   successfully).
 - **Deployed the MCP server to Render.com**, giving it a public HTTPS
-  endpoint Oracle AI Agent Studio can call: **`[RENDER_URL]/mcp`**
-  *(fill in your actual Render URL here, e.g. `https://oracle-recruiting.onrender.com/mcp`)*.
+  endpoint Oracle AI Agent Studio can call:
+  **`https://mcp-server-data-validation.onrender.com/mcp`**.
 
 **Documented (also in this repo, under `docs/`):**
 - `docs/architecture.md` — target end-state architecture and how each
@@ -74,7 +74,7 @@ AI Agent Studio that:
 
 ## 3. What's remaining — your coworker's next steps
 
-The MCP server is already live at **`[RENDER_URL]/mcp`** — your coworker
+The MCP server is already live at **`https://mcp-server-data-validation.onrender.com/mcp`** — your coworker
 does **not** need to redeploy anything. Their job is to finish wiring the
 agent together inside Oracle AI Agent Studio:
 
@@ -86,7 +86,7 @@ agent together inside Oracle AI Agent Studio:
 2. **Register the validator as an MCP tool** — this is the main
    remaining action:
    - Tools tab → **New Tool** → Tool Type: **MCP**
-   - Paste the endpoint: **`[RENDER_URL]/mcp`**
+   - Paste the endpoint: **`https://mcp-server-data-validation.onrender.com/mcp`**
    - Studio should introspect the server and list its tools
      (`validate_against_adp_spec`, `send_notification_email`,
      `get_hcm_extract`) — select which to expose (may need one Tool
@@ -112,7 +112,7 @@ agent together inside Oracle AI Agent Studio:
    transmission cutoff (e.g. nightly).
 
 7. **Test in Studio's preview/test chat** — validate a sample record and
-   confirm the tool-call trace hits `[RENDER_URL]/mcp` successfully and
+   confirm the tool-call trace hits `https://mcp-server-data-validation.onrender.com/mcp` successfully and
    returns the expected exceptions.
 
 8. **Data dependencies still needed from Fortive** before this is more
@@ -152,7 +152,7 @@ silently runs the wrong (system) Python instead of the venv, causing
 `ModuleNotFoundError`. Full explanation in `docs/SETUP_GUIDE.md`.
 
 They don't need to redeploy to Render unless they're changing the MCP
-server's code — the live one at `[RENDER_URL]/mcp` is already what Studio
+server's code — the live one at `https://mcp-server-data-validation.onrender.com/mcp` is already what Studio
 should point at.
 
 ---
