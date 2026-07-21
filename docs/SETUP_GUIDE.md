@@ -114,6 +114,17 @@ Every command below assumes it's still showing `(.venv)` — if you close
 and reopen your terminal, you must re-run the `activate` step (not the
 `venv` creation step, just activation) before continuing.
 
+> **Windows users (Git Bash, PowerShell, or cmd): use `python`, not
+> `python3`, for every command in the rest of this guide.** A Windows venv
+> only creates `python.exe` inside `.venv/Scripts/` — there's no
+> `python3.exe`. If you type `python3`, your shell can't find it in the venv
+> and silently falls back to whatever unrelated Python install happens to
+> be on your PATH, which won't have `mcp` (or anything else from
+> `requirements.txt`) installed — producing a confusing
+> `ModuleNotFoundError` even though the venv itself is set up correctly.
+> Run `which python` (Git Bash) to confirm it resolves to somewhere inside
+> `.venv/Scripts/` before continuing.
+
 ---
 
 ## 4. Install dependencies
@@ -234,6 +245,6 @@ from step 8 → select tools → test).
 | `.venv\Scripts\Activate.ps1 cannot be loaded` | Run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` first, or use `activate.bat` in cmd.exe instead of PowerShell. |
 | Prompt doesn't show `(.venv)` | The virtual environment isn't activated — re-run the `activate` command from step 3 (you don't need to recreate it with `python -m venv .venv` again). |
 | `pip install` fails with permission errors | You likely forgot to activate the virtual environment first — re-check for `(.venv)` in your prompt. |
-| `ModuleNotFoundError: No module named 'mcp'` when running the server | The virtual environment isn't active in this terminal, so `python3` is using your system Python instead of `.venv`. Run the `activate` command for your shell (step 3) until your prompt shows `(.venv)`, then re-run `python3 mcp_server/server.py`. If it still fails, run `which python3` — it should point inside `.venv/Scripts/` (Windows) or `.venv/bin/` (macOS/Linux); if it doesn't, activation isn't taking effect. |
+| `ModuleNotFoundError: No module named 'mcp'` when running the server | First check your prompt shows `(.venv)` — if not, activate it (step 3). If it does show `(.venv)` and you're on Windows, this is almost always the `python3` vs `python` issue: Windows venvs don't create a `python3.exe`, so `python3` silently runs a different Python install from your PATH instead of the venv. Run `which python3` — if it points anywhere other than `.venv/Scripts/`, switch to running `python mcp_server/server.py` (no "3") instead, and confirm with `which python` that it resolves inside `.venv/Scripts/`. `pip show mcp` will still correctly show the package installed in `.venv` even while this is happening, since `pip` (unlike `python3`) does resolve inside the venv — that's not a sign the install is broken. |
 | Port 8000 already in use | Run `python3 mcp_server/server.py --port 8001` instead, and adjust the tunnel/curl commands to match. |
 | `cloudflared` not found after install | Open a new terminal window so your PATH refreshes. |
