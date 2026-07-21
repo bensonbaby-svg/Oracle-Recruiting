@@ -8,6 +8,17 @@ Covers: getting the code, installing Python, installing dependencies (and
 *where* they actually go), running the test suite and demo, running the MCP
 server, and exposing it for Oracle AI Agent Studio to call.
 
+**One rule that matters on every step below:** on Windows (PowerShell,
+cmd.exe, or Git Bash), Python is invoked as `python`. On macOS/Linux, it's
+`python3`. Windows virtual environments never create a `python3.exe` — only
+`python.exe` — so typing `python3` on Windows silently runs a *different,
+unrelated* Python installation from your PATH instead of this project's
+virtual environment, which produces a confusing `ModuleNotFoundError` even
+though everything was installed correctly. Every command below is written
+for macOS/Linux (`python3`); if you're on Windows, mentally swap in
+`python` for every `python3` you see, in every step, including inside the
+virtual environment.
+
 ---
 
 ## 0. What you'll end up with
@@ -28,7 +39,7 @@ as a ZIP instead of using git — see step 2).
 
 **Check if you already have Python:**
 ```bash
-python3 --version
+python3 --version        # Windows: python --version
 ```
 If that prints `Python 3.9.x` or higher, you're set — skip to step 2.
 
@@ -68,62 +79,36 @@ that project folder (the one containing `main.py` and `requirements.txt`).
 
 ---
 
-## 3. Create the virtual environment (where dependencies actually go)
+## 3. Create and activate the virtual environment
 
 A **virtual environment** is just a folder that holds its own private copy
 of Python packages, separate from your system Python. We create one named
 `.venv` inside the project folder. Once activated, any `pip install` you
-run puts packages inside `.venv/lib/...` — not system-wide.
+run puts packages inside `.venv/` — not system-wide.
 
-**macOS / Linux:**
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
+Pick the row for your shell:
 
-**Windows (PowerShell):**
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-```
-If PowerShell blocks this with an execution-policy error, run:
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
-then retry the `Activate.ps1` line.
+| Shell | Create | Activate |
+|---|---|---|
+| macOS / Linux (bash/zsh) | `python3 -m venv .venv` | `source .venv/bin/activate` |
+| Windows — Git Bash (MINGW64) | `python -m venv .venv` | `source .venv/Scripts/activate` |
+| Windows — PowerShell | `python -m venv .venv` | `.venv\Scripts\Activate.ps1` |
+| Windows — cmd.exe | `python -m venv .venv` | `.venv\Scripts\activate.bat` |
 
-**Windows (Command Prompt / cmd.exe):**
-```cmd
-python -m venv .venv
-.venv\Scripts\activate.bat
-```
-
-**Windows (Git Bash / MINGW64):** the venv module still creates a
-Windows-style `Scripts/` folder here, not `bin/` — use:
-```bash
-python3 -m venv .venv
-source .venv/Scripts/activate
-```
-If you see `bash: .venv/bin/activate: No such file or directory`, that
-means you tried the macOS/Linux path (`bin/`) instead of `Scripts/` — this
-is the fix.
+Notes:
+- Windows always uses a `Scripts/` folder for these files; macOS/Linux uses
+  `bin/`. If you get `No such file or directory` on `.venv/bin/activate`
+  while on Windows, you used the wrong row above — switch to `Scripts/`.
+- If PowerShell blocks activation with an execution-policy error, run
+  `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` once, then
+  retry the `Activate.ps1` line.
 
 **How to know it worked:** your terminal prompt should now show `(.venv)`
 at the start of the line, e.g. `(.venv) you@machine Oracle-Recruiting %`.
 Every command below assumes it's still showing `(.venv)` — if you close
-and reopen your terminal, you must re-run the `activate` step (not the
-`venv` creation step, just activation) before continuing.
-
-> **Windows users (Git Bash, PowerShell, or cmd): use `python`, not
-> `python3`, for every command in the rest of this guide.** A Windows venv
-> only creates `python.exe` inside `.venv/Scripts/` — there's no
-> `python3.exe`. If you type `python3`, your shell can't find it in the venv
-> and silently falls back to whatever unrelated Python install happens to
-> be on your PATH, which won't have `mcp` (or anything else from
-> `requirements.txt`) installed — producing a confusing
-> `ModuleNotFoundError` even though the venv itself is set up correctly.
-> Run `which python` (Git Bash) to confirm it resolves to somewhere inside
-> `.venv/Scripts/` before continuing.
+and reopen your terminal, you must re-run the **activate** command again
+(not the create/`venv` command — that folder already exists, you just need
+to re-enter it for this terminal session).
 
 ---
 
@@ -133,16 +118,17 @@ With `(.venv)` active:
 ```bash
 pip install -r requirements.txt
 ```
-This reads `requirements.txt` (currently just `mcp`, the Model Context
-Protocol SDK) and installs it — and everything it depends on — into
-`.venv/`. You'll see a list of packages downloading; it takes under a
-minute.
+`pip` (unlike `python3`/`python`) reliably resolves inside the active venv
+on every OS, so this line is identical everywhere. It reads
+`requirements.txt` (currently just `mcp`, the Model Context Protocol SDK)
+and installs it — and everything it depends on — into `.venv/`. Takes
+under a minute.
 
 **Verify it worked:**
 ```bash
 python3 -c "from importlib.metadata import version; print('mcp installed OK, version', version('mcp'))"
 ```
-(Use `python` instead of `python3` on Windows if `python3` isn't recognized.)
+(Windows: `python` instead of `python3` — see the rule at the top of this guide.)
 
 ---
 
@@ -180,7 +166,8 @@ This starts a server listening on port 8000, serving the MCP protocol at
 to accept tool calls (from a local test client, or eventually from Oracle
 AI Agent Studio).
 
-To confirm it's alive, from a **second terminal**:
+To confirm it's alive, from a **second terminal** (no venv/activation
+needed for `curl`):
 ```bash
 curl -i -X POST http://localhost:8000/mcp \
   -H "Content-Type: application/json" \
@@ -241,10 +228,10 @@ from step 8 → select tools → test).
 
 | Problem | Fix |
 |---|---|
-| `python3: command not found` (Windows) | Use `python` instead, or reinstall Python with "Add to PATH" checked. |
+| `.venv/bin/activate: No such file or directory` | You're on Windows and used the macOS/Linux row from the step 3 table. Use `source .venv/Scripts/activate` (Git Bash) or the PowerShell/cmd equivalents instead. |
 | `.venv\Scripts\Activate.ps1 cannot be loaded` | Run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` first, or use `activate.bat` in cmd.exe instead of PowerShell. |
-| Prompt doesn't show `(.venv)` | The virtual environment isn't activated — re-run the `activate` command from step 3 (you don't need to recreate it with `python -m venv .venv` again). |
+| Prompt doesn't show `(.venv)` | The virtual environment isn't activated — re-run the activate command from step 3 (no need to recreate the folder). |
 | `pip install` fails with permission errors | You likely forgot to activate the virtual environment first — re-check for `(.venv)` in your prompt. |
-| `ModuleNotFoundError: No module named 'mcp'` when running the server | First check your prompt shows `(.venv)` — if not, activate it (step 3). If it does show `(.venv)` and you're on Windows, this is almost always the `python3` vs `python` issue: Windows venvs don't create a `python3.exe`, so `python3` silently runs a different Python install from your PATH instead of the venv. Run `which python3` — if it points anywhere other than `.venv/Scripts/`, switch to running `python mcp_server/server.py` (no "3") instead, and confirm with `which python` that it resolves inside `.venv/Scripts/`. `pip show mcp` will still correctly show the package installed in `.venv` even while this is happening, since `pip` (unlike `python3`) does resolve inside the venv — that's not a sign the install is broken. |
+| `ModuleNotFoundError: No module named 'mcp'` when running the server | If your prompt doesn't show `(.venv)`, activate it (step 3) first. If it **does** show `(.venv)` and you're on Windows, you almost certainly typed `python3` instead of `python` — Windows venvs have no `python3.exe`, so `python3` silently runs an unrelated Python from your PATH instead of the venv. Confirm with `which python` (Git Bash) that it resolves inside `.venv/Scripts/`, then re-run using `python`, not `python3`. `pip show mcp` will correctly show the package installed in `.venv` throughout this — that's not a sign the install is broken, since `pip` (unlike `python3`) does resolve inside the venv correctly. |
 | Port 8000 already in use | Run `python3 mcp_server/server.py --port 8001` instead, and adjust the tunnel/curl commands to match. |
 | `cloudflared` not found after install | Open a new terminal window so your PATH refreshes. |
