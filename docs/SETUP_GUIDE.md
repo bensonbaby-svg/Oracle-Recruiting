@@ -6,7 +6,9 @@ bottom; each step tells you exactly what to type and what you should see.
 
 Covers: getting the code, installing Python, installing dependencies (and
 *where* they actually go), running the test suite and demo, running the MCP
-server, and exposing it for Oracle AI Agent Studio to call.
+server, and getting it a public HTTPS URL for Oracle AI Agent Studio to
+call — either by deploying to Render.com (recommended, especially on
+locked-down corporate laptops) or by tunneling your local machine.
 
 **One rule that matters on every step below:** on Windows (PowerShell,
 cmd.exe, or Git Bash), Python is invoked as `python`. On macOS/Linux, it's
@@ -177,42 +179,95 @@ curl -i -X POST http://localhost:8000/mcp \
 You should get back `HTTP/1.1 200 OK` and a JSON body containing
 `"serverInfo":{"name":"fortive-hcm-adp-validator", ...}`.
 
-Stop the server any time with `Ctrl+C` in its terminal.
+Stop the server any time with `Ctrl+C` in its terminal. Running it locally
+like this is enough to prove the logic works (steps 5-7) — you only need
+step 8 once you're ready to actually register it as a tool in Oracle AI
+Agent Studio.
 
 ---
 
-## 8. Expose it publicly (only needed to register in Oracle AI Agent Studio)
+## 8. Get it a public HTTPS URL (needed to register in Oracle AI Agent Studio)
 
 Studio runs in Oracle's cloud and can't reach `localhost` on your laptop —
-it needs a public HTTPS URL. For a quick demo (no real employee data
-involved, since we're only using the mock CSV), use a temporary tunnel:
+it needs a public HTTPS URL. Two paths; **Path A is recommended** and is
+the only one that reliably works on a locked-down corporate laptop, since
+nothing runs or installs locally at all.
 
-**Install cloudflared** (no account needed for a quick tunnel):
-| OS | Command |
-|---|---|
-| macOS | `brew install cloudflared` |
-| Windows | `winget install --id Cloudflare.cloudflared` |
-| Linux | See Cloudflare's install instructions for your distro (`cloudflared` package) |
+### Path A — Deploy to Render.com (recommended)
 
-**Start the tunnel** (in a third terminal, while the server from step 7 is
-still running):
+Everything happens in Render's cloud via your browser and GitHub login —
+no local `.exe`, no tunnel, nothing for corporate endpoint security to
+block.
+
+1. Go to [render.com](https://render.com) and sign up/log in (GitHub login
+   is easiest).
+2. Click **New +** → **Web Service**.
+3. **Connect a repository** → authorize Render against
+   `bensonbaby-svg/Oracle-Recruiting`
+   (`https://github.com/bensonbaby-svg/Oracle-Recruiting.git`). If it
+   offers a "public Git repo" URL field instead of an account connection,
+   paste that URL directly.
+4. Set **Branch** to `claude/fortive-data-validation-agent-gctvor` — this
+   work isn't merged to `main` yet, so the default branch won't have it.
+5. **Environment/Runtime**: Python 3.
+6. **Build Command**: `pip install -r requirements.txt`
+7. **Start Command**: `python mcp_server/server.py`
+8. **Instance Type**: the free tier is fine for a demo.
+9. Click **Create Web Service**. Render builds and deploys automatically —
+   watch the build log for `Uvicorn running on http://0.0.0.0:<port>` to
+   confirm it started. You'll get a URL like
+   `https://oracle-recruiting.onrender.com`.
+10. Your MCP endpoint for Studio is that URL plus `/mcp`:
+    ```
+    https://oracle-recruiting.onrender.com/mcp
+    ```
+
+**Verify it** from any terminal (no venv or local server needed — this is
+hitting Render's cloud, not your machine):
 ```bash
-cloudflared tunnel --url http://localhost:8000
+curl -i -X POST https://oracle-recruiting.onrender.com/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
 ```
-It prints a URL like `https://random-words.trycloudflare.com`. Your MCP
-endpoint to give Oracle AI Agent Studio is:
-```
-https://random-words.trycloudflare.com/mcp
-```
+Expect `HTTP/1.1 200 OK` with `"serverInfo":{"name":"fortive-hcm-adp-validator"...}`.
 
-Keep both the server (step 7) and the tunnel running for as long as you
-need Studio to be able to reach it. If you restart either one, the tunnel
-URL changes — re-register the new URL in Studio.
+**Free-tier note:** Render spins the service down after a period of
+inactivity; the first request after idle time can take 30-60 seconds while
+it wakes back up. That's expected, not a bug — subsequent requests are fast.
 
-This tunnel approach is for demo/testing only. For anything beyond that
-(real Fortive data, a persistent agent), host the server on real
-infrastructure (OCI Compute, Container, or Function) instead — ask if you
-want steps for that path.
+### Path B — Local tunnel (only if your machine allows it)
+
+If you're not on a restricted corporate laptop, you can instead expose the
+server you started in step 7 directly from your machine. Try, in order:
+
+- **Cloudflare quick tunnel** (needs to install/run `cloudflared`):
+  ```bash
+  cloudflared tunnel --url http://localhost:8000
+  ```
+- **SSH tunnel** (no install — uses the `ssh` client you already have):
+  ```bash
+  ssh -R 80:localhost:8000 nokey@localhost.run
+  ```
+
+Either prints a public URL — append `/mcp` to it for Studio. Keep the
+server (step 7) and the tunnel both running the whole time Studio needs to
+reach it; if either restarts, the URL changes and you'll need to
+re-register it.
+
+**If you hit any of these, stop and switch to Path A instead** — they're
+all signs of corporate endpoint security blocking local execution, not
+something to keep working around:
+- `This operation is disabled by Group Policy: Enable Windows Package Manager`
+- Unable to execute a downloaded `.exe`
+- `Connection to localhost.run closed.` immediately after connecting
+
+Local tunnels (either path) are for demo/testing only regardless of
+whether they work — the URL is temporary and disappears when you close the
+terminal. For anything beyond a one-off demo (real Fortive data, a
+persistent agent), Render's free tier is still just a demo tier too — move
+to real infrastructure (OCI Compute, Container, or Function) at that point
+instead; ask if you want steps for that path.
 
 ---
 
@@ -220,7 +275,7 @@ want steps for that path.
 
 See `docs/oracle_agent_studio_setup.md`, section **2a**, for the exact
 click-by-click steps (Tools → New Tool → Tool Type: MCP → paste the URL
-from step 8 → select tools → test).
+from step 8, Path A or B → select tools → test).
 
 ---
 
@@ -233,5 +288,10 @@ from step 8 → select tools → test).
 | Prompt doesn't show `(.venv)` | The virtual environment isn't activated — re-run the activate command from step 3 (no need to recreate the folder). |
 | `pip install` fails with permission errors | You likely forgot to activate the virtual environment first — re-check for `(.venv)` in your prompt. |
 | `ModuleNotFoundError: No module named 'mcp'` when running the server | If your prompt doesn't show `(.venv)`, activate it (step 3) first. If it **does** show `(.venv)` and you're on Windows, you almost certainly typed `python3` instead of `python` — Windows venvs have no `python3.exe`, so `python3` silently runs an unrelated Python from your PATH instead of the venv. Confirm with `which python` (Git Bash) that it resolves inside `.venv/Scripts/`, then re-run using `python`, not `python3`. `pip show mcp` will correctly show the package installed in `.venv` throughout this — that's not a sign the install is broken, since `pip` (unlike `python3`) does resolve inside the venv correctly. |
-| Port 8000 already in use | Run `python3 mcp_server/server.py --port 8001` instead, and adjust the tunnel/curl commands to match. |
+| Port 8000 already in use (local run) | Run `python3 mcp_server/server.py --port 8001` instead, and adjust the tunnel/curl commands to match. |
 | `cloudflared` not found after install | Open a new terminal window so your PATH refreshes. |
+| `This operation is disabled by Group Policy: Enable Windows Package Manager` | winget is blocked by corporate policy — skip installing cloudflared via winget and use Path A (Render) instead. |
+| Downloaded `cloudflared.exe` won't run / "blocked by your organization" | Corporate endpoint security is blocking new executables — switch to Path A (Render), which needs no local `.exe`. |
+| `Connection to localhost.run closed.` right after running the SSH tunnel command | Corporate network is likely blocking/killing SSH port-forwarding specifically (common even when plain SSH is allowed). Switch to Path A (Render). |
+| Render build fails | Check the build log for the actual error — most often a typo in the Build/Start Command (should be exactly `pip install -r requirements.txt` and `python mcp_server/server.py`) or the wrong branch selected in step 4. |
+| First request to the Render URL is very slow or times out | Expected on the free tier after a period of inactivity — it takes 30-60 seconds to spin back up. Retry the same `curl` command once more. |
