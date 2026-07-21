@@ -21,6 +21,7 @@ import os
 import sys
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -28,7 +29,18 @@ from src.rules import validate_record
 from src.validator import load_extract
 from src.email_notifier import render_digest_html, send_or_write
 
-mcp = FastMCP("fortive-hcm-adp-validator")
+# The SDK auto-enables DNS-rebinding protection that only trusts Host headers
+# matching localhost/127.0.0.1 -- correct for a server that only ever runs on
+# your own machine, but it rejects every request once this is deployed behind
+# a real public hostname (Render, etc.), since the Host header there is the
+# public domain, not localhost. This server is called by Oracle AI Agent
+# Studio over HTTPS from Oracle's infrastructure, not from a browser with a
+# cookie-based session DNS rebinding would exploit, so disabling it here is
+# the right tradeoff rather than trying to allowlist Studio's outbound IPs.
+mcp = FastMCP(
+    "fortive-hcm-adp-validator",
+    transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
+)
 
 DEFAULT_EXTRACT = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
