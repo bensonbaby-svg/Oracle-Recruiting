@@ -52,13 +52,16 @@ If missing: macOS (`brew install git`), Windows ([git-scm.com/downloads](https:/
 
 **Option A — with git (recommended):**
 ```bash
-git clone <this-repo-url>
+git clone https://github.com/bensonbaby-svg/Oracle-Recruiting.git
 cd Oracle-Recruiting
 git checkout claude/fortive-data-validation-agent-gctvor
 ```
 
-**Option B — no git:** on GitHub, click **Code → Download ZIP**, unzip it
-anywhere, then open a terminal and `cd` into the unzipped folder.
+**Option B — no git:** go to
+[github.com/bensonbaby-svg/Oracle-Recruiting](https://github.com/bensonbaby-svg/Oracle-Recruiting),
+switch the branch dropdown to `claude/fortive-data-validation-agent-gctvor`
+(this work isn't merged to `main` yet), then click **Code → Download ZIP**,
+unzip it anywhere, and open a terminal and `cd` into the unzipped folder.
 
 From here on, every command assumes your terminal's current directory is
 that project folder (the one containing `main.py` and `requirements.txt`).
