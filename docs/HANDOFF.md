@@ -4,6 +4,9 @@
 Repo: `https://github.com/bensonbaby-svg/Oracle-Recruiting` (public)
 Branch: `claude/fortive-data-validation-agent-gctvor`
 
+*Looking for a non-technical, manager-facing version instead? See
+`docs/EXEC_SUMMARY.md`.*
+
 ---
 
 ## 1. Use case
