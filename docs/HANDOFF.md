@@ -79,6 +79,17 @@ placeholders until Fortive's real ADP spec replaces them.
   validate → notify, the same flow the real agent will run.
 - **17 mock Canada employee records** (`data/sample_hcm_extract_canada.csv`)
   with deliberately injected errors, used to prove the rule catalog works.
+  This is the **input file** — a stand-in for the real Oracle HCM Canada
+  payroll extract. Its 19 columns: `employee_id`, `first_name`,
+  `last_name`, `sin` (9-digit, checksum-validated), `province`,
+  `postal_code`, `pay_group`, `pay_frequency`, `hire_date`,
+  `termination_date`, `effective_date`, `bank_institution`,
+  `bank_transit`, `bank_account`, `td1_federal_claim_code`,
+  `td1_provincial_claim_code`, `currency`, `language_code`,
+  `employment_status`. `main.py` reads this file directly; the MCP
+  server's `validate_against_adp_spec` tool instead takes records passed
+  in as JSON — once wired into Studio, Studio supplies the records (pulled
+  from live Fusion HCM data), not this CSV.
 - **A passing test suite** (`tests/test_validator.py`, 8 tests, stdlib only).
 - **An MCP server** (`mcp_server/server.py`) exposing the validation and
   notification logic as MCP tools — `validate_against_adp_spec`,
