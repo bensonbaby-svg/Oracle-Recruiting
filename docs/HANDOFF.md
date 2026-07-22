@@ -184,3 +184,25 @@ should point at.
 | `docs/oracle_agent_studio_setup.md` | Agent instructions, tool registration steps, full checklist |
 | `docs/SETUP_GUIDE.md` | Full local setup + Render deployment walkthrough |
 | `docs/HANDOFF.md` | This document |
+
+---
+
+## 6. Render access / continuity while the primary owner is out
+
+The MCP server is deployed under one Render account. Your coworker should
+**not** spin up a second Render service from this repo "just in case" —
+that creates a second URL, and Studio would need re-registering against
+whichever one is actually being maintained. Instead:
+
+- **For routine code fixes**: if auto-deploy is enabled on the Render
+  service (Render dashboard → service → Settings → Build & Deploy →
+  Auto-Deploy), any push to `claude/fortive-data-validation-agent-gctvor`
+  redeploys automatically. Anyone with push access to this GitHub repo can
+  fix code without ever touching Render directly.
+- **For anything Render-dashboard-specific** (checking logs, a manual
+  deploy if auto-deploy is off, environment variables, restarting the
+  service, diagnosing an outage): the coworker needs to be added to the
+  Render account/team itself — Render dashboard → Account/Team Settings →
+  Members → Invite by email. This gives them the same service, not a copy.
+- Current live endpoint (keep this the single source of truth):
+  **`https://mcp-server-data-validation.onrender.com/mcp`**
