@@ -33,6 +33,31 @@ The agent never edits HCM data and never blocks or modifies the existing
 Oracle-to-ADP transmission — it runs alongside it and raises exceptions early
 enough for a human to fix the source data before the real interface runs.
 
+Same flow, rendered as a diagram:
+
+```mermaid
+flowchart TD
+    HCM["Oracle HCM Cloud<br/>Canada payroll data"]
+
+    subgraph AGENT["Oracle AI Agent Studio — HCM-ADP-CA-Validator"]
+        RETRIEVE("Retrieve extract<br/><small>Business Object tool</small>")
+        VALIDATE("Validate against ADP spec<br/><small>MCP tool</small>")
+    end
+
+    DECISION{"Exceptions<br/>found?"}
+    NOTIFY("Notify data owner<br/><small>Email tool</small>")
+    REVIEW["HR / Payroll data owner<br/>reviews exception digest"]
+    FIX["Corrects data<br/>in Oracle HCM"]
+    ADP[["ADP GlobalView / Celergo"]]
+
+    HCM --> RETRIEVE --> VALIDATE --> DECISION
+    DECISION -- "No" --> ADP
+    DECISION -- "Yes" --> NOTIFY --> REVIEW
+    REVIEW --> FIX
+    FIX -. "next scheduled run" .-> HCM
+    REVIEW -. "false positive" .-> ADP
+```
+
 ## Component mapping: wireframe -> Oracle AI Agent Studio
 
 | Wireframe (this repo)              | Real Oracle AI Agent Studio component |
