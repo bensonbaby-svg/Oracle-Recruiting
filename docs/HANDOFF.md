@@ -1,8 +1,11 @@
 # Handoff — Fortive Oracle HCM to ADP Celergo Data Validation Agent (Canada MVP)
 
 Status as of the date this was last updated: MCP server built, tested, and
-deployed. Next step is registering it in Oracle AI Agent Studio and
-finishing the remaining tool/knowledge/trigger configuration there.
+deployed to Render — **confirmed live and responding correctly** at
+`https://mcp-server-data-validation.onrender.com/mcp` (verified with a real
+`initialize` call returning `200 OK`). Next step is registering it in
+Oracle AI Agent Studio and finishing the remaining tool/knowledge/trigger
+configuration there.
 
 ---
 
@@ -53,7 +56,14 @@ AI Agent Studio that:
   `send_notification_email`, and a demo-only `get_hcm_extract` — built on
   the official MCP Python SDK. Verified end-to-end over the real MCP
   protocol (`initialize`, `tools/list`, `tools/call` all tested
-  successfully).
+  successfully), both locally and against the live Render deployment.
+  (One gotcha already fixed: the SDK's default DNS-rebinding protection
+  only trusts `localhost`/`127.0.0.1` Host headers, which rejected every
+  request once deployed behind Render's public domain with a `421 Invalid
+  Host header` error. It's disabled in this server's config since Studio
+  calls it server-to-server over HTTPS, not from a browser session that
+  protection is meant to guard. If you ever recreate this server from
+  scratch, make sure that fix carries over.)
 - **Deployed the MCP server to Render.com**, giving it a public HTTPS
   endpoint Oracle AI Agent Studio can call:
   **`https://mcp-server-data-validation.onrender.com/mcp`**.
